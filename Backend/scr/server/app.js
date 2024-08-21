@@ -4,9 +4,15 @@ import morgan from 'morgan'
 import { jwtSign, jwtDecode } from '../utils/jwt/jwt.js'
 import { verificarCredenciales, registrarUsuario, getUser } from '../models/models.users.js'
 import { authToken } from '../middlewares/authToken.js'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+// Crear __filename y __dirname manualmente
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
-const PORT = process.env.PORT ?? 3000
+const PORT = process.env.PORT ?? 3005
 
 app.use(cors())
 app.use(express.json())
@@ -62,6 +68,14 @@ app.get('/users', authToken, async (req, res) => {
 
 app.all('*', async (req, res) => {
   res.status(404).json({ code: 404, message: 'La ruta consultada no existe' })
+})
+
+// Servir archivos estáticos
+app.use(express.static(path.join(__dirname, 'build')))
+
+// Ruta catch-all para manejar todas las rutas de frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../build', 'index.html'))
 })
 
 app.listen(PORT, () => console.log('Conectados al servidor 3000'))
